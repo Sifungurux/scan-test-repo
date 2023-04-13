@@ -4,13 +4,17 @@ Repo containing test setup for scanning
 
 ## Prerequsist
 
-1. Install tekton
+- Install tekton
 
-    ``` bash
-    kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
-    ```
+``` bash
+kubectl apply --filename https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+```
+- Install tekton tasks
 
-2. Install pipenv
+``` bash
+```
+
+- Install pipenv on local machine
 
 ``` bash
 pip install pipenv
@@ -36,5 +40,4 @@ But following command can be used to directly scan a remote repo.
 
 ``` bash
 trivy repo hhtps://repo_url
-´´´
-
+```
