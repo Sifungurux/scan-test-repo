@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: utils-create-filename-from-repo-url # Made for Azure devops 
+spec:
+  results:
+    - name: report-filename
+      description: Filename generated from url from project repo
+  params:
+    - name: repo-url
+      description: |
+        Url to repo scanned
+  steps:
+    - name: create-filename
+      image: redhat/ubi8-minimal
+      script: |
+        #!/bin/bash
+
+        URL=$(params.repo-url)
+
+        PROVIDER="$(cut -d'/' -f3 <<<$URL)"
+
+        if [ "$PROVIDER" = "github.com" ]; then
+          F=4
+          A=5
+        fi
+
+        if [ "$PROVIDER" = "dev.azure.com" ]; then
+          F=5
+          A=7
+        fi
+        PROJECT="$(cut -d'/' -f$F <<<$URL)"
+        APPLICATION="$(cut -d'/' -f$A <<<$URL)"
+        FILE="${PROJECT}.${APPLICATION}"
+
+        FILENAME=$(echo "$FILE" | sed -r 's/'%20'/-/g')
+
+        echo $FILENAME | tee $(results.report-filename.path) 

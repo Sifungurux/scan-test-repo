@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: trivy-filesystem-scan
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.44.0"
+    tekton.dev/categories: Tekton
+    tekton.dev/tags: Task
+    tekton.dev/displayName: "Filesystem Scan"
+    tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le,linux/arm64"
+spec:
+  description: |
+    Scans code for related issus
+  workspaces:
+  - name: source
+    description: |
+      Volume to code position   
+  params:
+    - name: version
+      description: Version of the Trivy scanner image
+      default: 0.38.3
+    - name: trivy_fs_args
+      type: array
+  steps:
+  - name: code-scanning
+    image: aquasec/trivy:$(params.version)
+    args: ["fs", "$(params.trivy_fs_args[*])", $(workspaces.source.path)]

@@ -1,0 +1,32 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: filesystem-vulnerability-scanning-
+spec:
+  #serviceAccountName: scan-bot # Not active while testing with public github repo
+  pipelineRef:
+    name: fs-scan-pipeline
+  podTemplate:
+    securityContext:
+      fsGroup: 65532
+  workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+  params:
+    - name: repo-url
+      value: https://github.com/knqyf263/trivy-ci-test 
+    - name: branch-name
+      value: master ### Master is default for Azure Devops and main for Github
+    - name: trivy_fs_args
+      value: 
+        - "--format"
+        - "sarif"
+        - "--no-progress"
+        - "--scanners"
+        - "vuln" # issues to detect (vuln,config,secret,license) (default [vuln,secret])"

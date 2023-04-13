@@ -1,0 +1,56 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: fs-scan-pipeline
+spec:
+  description: |
+    Filesystem code scanning with trivy
+  params:
+  - name: repo-url
+    type: string
+  - name: branch-name
+    default: master
+  - name: trivy_version
+    type: string
+    default: 0.38.3
+  - name: trivy_fs_args
+    type: array
+  workspaces:
+  - name: shared-data
+    description: |
+      This workspace contains repo data and scan results files, so they can be read by the
+      next task.
+  tasks:
+  - name: fetch-source
+    taskRef:        
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: url
+      value: $(params.repo-url)
+    - name: revision
+      value: $(params.branch-name)
+  - name: report-name-generate
+    taskRef:
+      name: utils-create-filename-from-repo-url
+    params:
+    - name: repo-url
+      value: $(params.repo-url)
+  - name: trivy-fs-scan
+    taskRef:
+      name: trivy-filesystem-scan
+    runAfter:
+      - fetch-source
+      - report-name-generate
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: version
+      value: $(params.trivy_version)
+    - name: report-filename
+      value: tasks.create-filename-from-repo-url.results.report-filename
+    - name: trivy_fs_args
+      value: $(params.trivy_fs_args[*])
